@@ -15,7 +15,7 @@ const int grid_height = 150;
 const int real_width  = grid_width * scale;
 const int real_height = grid_height * scale;
 
-#define MINE_TIMER
+//#define MINE_TIMER
 #ifdef  MINE_TIMER
 const int frames = 1000;
 #else
@@ -80,8 +80,6 @@ int PaintProc(HWND hWnd) {
 
     HDC hdc = GetDC(hWnd);
 	
-	//GetClientRect(hWnd, &clrect);
-
     HDC memDC = CreateCompatibleDC ( hdc );
     HBITMAP memBM = CreateCompatibleBitmap (hdc, grid_width, grid_height);
 	SelectObject ( memDC, memBM );
@@ -98,18 +96,12 @@ int PaintProc(HWND hWnd) {
 				const COLORREF color = RGB(255,255,0);
 				SetPixel(memDC, x, y, color);
 			}
-			
-/*	WCHAR text[50];
-	auto len = wsprintf(text, _T("stage: %d"), life->get_stage());
-	TextOut(memDC, 1,1, text, len);
-*/			
-	//BitBlt(hdc,0,0,grid_height,grid_width,memDC,0,0,SRCCOPY);
+
 	StretchBlt(hdc,0,0,real_width,real_height,memDC,0,0,grid_width,grid_height,SRCCOPY);
 	DeleteObject(memBM);
 	DeleteDC(memDC);
 	ReleaseDC(hWnd, hdc);
 
-	// Sleep(0);
 	life->step();
 	return 0;
 }
@@ -129,12 +121,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 		} break;
 	case WM_TIMER: {
 			SendMessage(hWnd, WM_PAINT, 0, 0);
-/*			//for (int i = 0; i != 1; ++i) {
-				PaintProc(hWnd);
-				RedrawWindow(hWnd , NULL , NULL , RDW_INVALIDATE);
-				Sleep(0);
-			//}
-*/			return 0;		
+			return 0;		
 		} break;
     case WM_PAINT: {
 			return PaintProc(hWnd);
