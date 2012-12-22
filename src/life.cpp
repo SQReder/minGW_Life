@@ -125,27 +125,15 @@ int tlife::neighbour(int x, int y) {
 	int ret = 0;
 
 #define range 1
-
+	const int xw = x + w;
+	const int yh = y + h;
 	for (int dx = -range; dx <= range; ++dx) {
 		for (int dy = -range; dy <= range; ++dy) {
 			if (dx != 0 || dy != 0) {
 				int xx, yy;
 
-				if (x + dx < 0) {
-					xx = w - 1;
-				} else if (x + dx >= w) {
-					xx = dx - 1;
-				} else {
-					xx = x + dx;
-				}
-
-				if (y + dy < 0) {
-					yy = h - 1;
-				} else if (y + dy >= h) {
-					yy = dy - 1;
-				} else {
-					yy = y + dy;
-				}
+				xx = (xw + dx) % w;
+				yy = (yh + dy) % h;
 
 				if (grid[yy][xx]) {
 					++ret;
@@ -175,9 +163,12 @@ void tlife::step() {
 			grid[y][x] = buff[y][x];
 		}
 	}
+	
+	++stage;
 }
 
-const lType **tlife::get_grid() const { return (const lType * *)grid; }
+const lType **tlife::get_grid() const { return (const lType**)grid; }
+const int tlife::get_stage() const { return stage; }
 
 tlife::~tlife() {
 	delete_matrix <lType> (grid, h);

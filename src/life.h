@@ -10,7 +10,8 @@ public:
 
 	void seed(int count);
 	void step();
-
+	
+	const int get_stage() const;
 	const lType **get_grid() const ;
 
 private:
@@ -23,5 +24,6 @@ private:
 	void process(int x, int y);
 	int neighbour(int x, int y);
 
+	unsigned int stage = 0;
 };
 #endif

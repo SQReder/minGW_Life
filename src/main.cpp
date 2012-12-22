@@ -5,18 +5,19 @@
 #include <wingdi.h>
 #include <tchar.h>
 #include <time.h>
+#include <stdio.h>
 
 #include "life.h"
 
 const int scale = 4;
-const int grid_width = 201;
-const int grid_height = 101;
+const int grid_width = 200;
+const int grid_height = 150;
 const int real_width  = grid_width * scale;
 const int real_height = grid_height * scale;
 
-//#define MINE_TIMER
+#define MINE_TIMER
 #ifdef  MINE_TIMER
-const int frames = 10/100;
+const int frames = 1000;
 #else
 	// Horrible piece of shit (hello linux core developers)
 	#ifndef USER_TIMER_MINIMUM
@@ -76,16 +77,16 @@ int PaintProc(HWND hWnd) {
 	static HBRUSH background = CreateSolidBrush(RGB(0,0,0));
 
 	PAINTSTRUCT ps;
-	RECT clrect;
 
     HDC hdc = GetDC(hWnd);
 	
-	GetClientRect(hWnd, &clrect);
+	//GetClientRect(hWnd, &clrect);
 
     HDC memDC = CreateCompatibleDC ( hdc );
-    HBITMAP memBM = CreateCompatibleBitmap (hdc, grid_height, grid_width);
+    HBITMAP memBM = CreateCompatibleBitmap (hdc, grid_width, grid_height);
 	SelectObject ( memDC, memBM );
 	
+	RECT clrect;
 	clrect.left = clrect.top = 0;
 	clrect.right = real_width;
 	clrect.bottom = real_height;
@@ -98,8 +99,14 @@ int PaintProc(HWND hWnd) {
 				SetPixel(memDC, x, y, color);
 			}
 			
+/*	WCHAR text[50];
+	auto len = wsprintf(text, _T("stage: %d"), life->get_stage());
+	TextOut(memDC, 1,1, text, len);
+*/			
 	//BitBlt(hdc,0,0,grid_height,grid_width,memDC,0,0,SRCCOPY);
 	StretchBlt(hdc,0,0,real_width,real_height,memDC,0,0,grid_width,grid_height,SRCCOPY);
+	DeleteObject(memBM);
+	DeleteDC(memDC);
 	ReleaseDC(hWnd, hdc);
 
 	// Sleep(0);
@@ -121,14 +128,16 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 			return 0;
 		} break;
 	case WM_TIMER: {
-			//SendMessage(hWnd, WM_PAINT, 0, 0);
-			PaintProc(hWnd);
-			RedrawWindow(hWnd , NULL , NULL , RDW_INVALIDATE);
-			Sleep(0);
-			return 0;		
+			SendMessage(hWnd, WM_PAINT, 0, 0);
+/*			//for (int i = 0; i != 1; ++i) {
+				PaintProc(hWnd);
+				RedrawWindow(hWnd , NULL , NULL , RDW_INVALIDATE);
+				Sleep(0);
+			//}
+*/			return 0;		
 		} break;
     case WM_PAINT: {
-			// return PaintProc(hWnd);
+			return PaintProc(hWnd);
 		} break;
     case WM_DESTROY: {
 			delete life;
