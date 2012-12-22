@@ -1,5 +1,6 @@
 #define UNICODE
 #define _UNICODE
+#define WINVER 0x0600
 #include <windows.h>
 #include <wingdi.h>
 #include <tchar.h>
@@ -7,10 +8,21 @@
 
 #include "life.h"
 
-#define scale 4
-#define w 201
-#define h 201
+const int scale = 4;
+const int grid_width = 201;
+const int grid_height = 101;
+const int real_width  = grid_width * scale;
+const int real_height = grid_height * scale;
+
+//#define MINE_TIMER
+#ifdef  MINE_TIMER
 const int frames = 10/100;
+#else
+	// Horrible piece of shit (hello linux core developers)
+	#ifndef USER_TIMER_MINIMUM
+	#define USER_TIMER_MINIMUM 0x0000000A
+	#endif
+#endif
 
 tlife* life;
 
@@ -38,7 +50,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdStr,
         _T("Life with MinGW && VIM|Notepad++"), // window->caption
         WS_OVERLAPPEDWINDOW, // style of window
         CW_USEDEFAULT, CW_USEDEFAULT, // x,y
-        w*scale+20, h*scale+50, // // width, height
+        real_width+20, real_height+50, // // width, height
         NULL, // parent HWND
         NULL, // menu
         hInstance, NULL // lParam
@@ -69,32 +81,25 @@ int PaintProc(HWND hWnd) {
     HDC hdc = GetDC(hWnd);
 	
 	GetClientRect(hWnd, &clrect);
-	// FillRect(hdc, &clrect, (HBRUSH)COLOR_WINDOW);
 
     HDC memDC = CreateCompatibleDC ( hdc );
-    HBITMAP memBM = CreateCompatibleBitmap (hdc, h, w);
+    HBITMAP memBM = CreateCompatibleBitmap (hdc, grid_height, grid_width);
 	SelectObject ( memDC, memBM );
 	
 	clrect.left = clrect.top = 0;
-	clrect.right = w * scale;
-	clrect.bottom = h * scale;
+	clrect.right = real_width;
+	clrect.bottom = real_height;
 	FillRect(memDC, &clrect, background);
 	
-	for (int y = 0; y < h; ++y)
-		for (int x = 0; x < w; ++x)
+	for (int y = 0; y < grid_height; ++y)
+		for (int x = 0; x < grid_width; ++x)
 			if (grid[y][x]) {
-				// RECT r;
-				// r.left = x*scale;
-				// r.right = x*scale+scale;
-				// r.top = y*scale;
-				// r.bottom = y*scale+scale;
-				// FillRect(memDC, &r, foreground);
 				const COLORREF color = RGB(255,255,0);
 				SetPixel(memDC, x, y, color);
 			}
 			
-	// BitBlt(hdc,0,0,h,w,memDC,0,0,SRCCOPY);
-	StretchBlt(hdc,0,0,w*scale,h*scale,memDC,0,0,w,h,SRCCOPY);
+	//BitBlt(hdc,0,0,grid_height,grid_width,memDC,0,0,SRCCOPY);
+	StretchBlt(hdc,0,0,real_width,real_height,memDC,0,0,grid_width,grid_height,SRCCOPY);
 	ReleaseDC(hWnd, hdc);
 
 	// Sleep(0);
@@ -106,9 +111,13 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 	static int nTimerID;
 	switch (message) {
 	case WM_CREATE: {
+#ifdef MINE_TIMER
 			nTimerID = SetTimer(hWnd, 1, frames, (TIMERPROC) NULL);
-			life = new tlife(w,h);
-			life->seed(w*h/3);
+#else
+			nTimerID = SetTimer(hWnd, 1, USER_TIMER_MINIMUM, (TIMERPROC) NULL);
+#endif
+			life = new tlife(grid_width,grid_height);
+			life->seed(grid_width*grid_height/3);
 			return 0;
 		} break;
 	case WM_TIMER: {

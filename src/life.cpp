@@ -106,7 +106,7 @@ void tlife::seed(int count) {
 	
 	int cx = w / 2;
 	int cy = h / 2;
-
+/*
 	grid[cx-1][cy-1] = true;
 	grid[cx][cy-1] = true;
 	grid[cx+1][cy-1] = true;
@@ -115,7 +115,7 @@ void tlife::seed(int count) {
 	grid[cx-1][cy+1] = true;
 	grid[cx][cy+1] = true;
 	grid[cx+1][cy+1] = true;
-
+*/
 	// grid[30][0] = true;
 	// grid[31][0] = true;
 	// grid[32][0] = true;
